@@ -12,7 +12,5 @@ public interface ICliente {
 
     public Cliente save(Cliente nuevo);
 
-    public Cliente update(Integer id, Cliente data);
-
     public void delete(Integer id);
 }

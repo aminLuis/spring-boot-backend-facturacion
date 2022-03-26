@@ -1,15 +1,14 @@
 package com.luis.facturacion.spring.boot.backend.apirest.models;
 
-import java.sql.Date;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -20,18 +19,24 @@ public class Cliente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotEmpty
     private Integer id;
+
+    @Column(nullable = false)
+    @NotEmpty(message = "Campo 'nombre' vacio")
     private String nombre;
+    @NotEmpty
     private String apellidos;
+    @Column(nullable = false, unique = true)
+    @Email
+    @NotEmpty
     private String email;
-    private Date createAt;
 
     public Cliente() {
-        id = 0;
-        nombre = "";
-        apellidos = "";
-        email = "";
-        createAt = null;
+        id = null;
+        nombre = null;
+        apellidos = null;
+        email = null;
     }
 
     public Integer getId() {
@@ -64,15 +69,6 @@ public class Cliente {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    @Temporal(TemporalType.DATE)
-    public Date getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
     }
 
 }
