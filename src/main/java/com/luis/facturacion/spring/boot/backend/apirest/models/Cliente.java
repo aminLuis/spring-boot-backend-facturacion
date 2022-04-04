@@ -32,12 +32,7 @@ public class Cliente {
     @NotEmpty
     private String email;
 
-    public Cliente() {
-        id = null;
-        nombre = null;
-        apellidos = null;
-        email = null;
-    }
+    private String foto;
 
     public Integer getId() {
         return id;
@@ -69,6 +64,14 @@ public class Cliente {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
+
+    public String getFoto() {
+        return foto;
     }
 
 }

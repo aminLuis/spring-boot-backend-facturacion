@@ -6,6 +6,8 @@ import com.luis.facturacion.spring.boot.backend.apirest.dao.Cliente_repository;
 import com.luis.facturacion.spring.boot.backend.apirest.models.Cliente;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +19,11 @@ public class Cliente_service implements ICliente {
     @Override
     public List<Cliente> findAll() {
         return (List<Cliente>) repositorio.findAll();
+    }
+
+    @Override
+    public Page<Cliente> findAll(Pageable pageable) {
+        return repositorio.findAll(pageable);
     }
 
     @Override
