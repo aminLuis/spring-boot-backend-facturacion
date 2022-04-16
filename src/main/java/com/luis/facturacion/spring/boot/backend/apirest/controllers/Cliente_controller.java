@@ -1,6 +1,8 @@
 package com.luis.facturacion.spring.boot.backend.apirest.controllers;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,7 +18,10 @@ import com.luis.facturacion.spring.boot.backend.apirest.models.Cliente;
 import com.luis.facturacion.spring.boot.backend.apirest.services.ICliente;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -126,6 +131,18 @@ public class Cliente_controller {
         Map<String, Object> response = new HashMap<>();
 
         try {
+
+            Cliente cliente = servicio.findById(id);
+            String nameAnterior = cliente.getFoto();
+
+            if (nameAnterior != null && nameAnterior.length() > 0) {
+                Path routeAnterior = Paths.get("uploads").resolve(nameAnterior).toAbsolutePath();
+                File fileAnterior = routeAnterior.toFile();
+                if (fileAnterior.exists() && fileAnterior.canRead()) {
+                    fileAnterior.delete();
+                }
+            }
+
             servicio.delete(id);
         } catch (DataAccessException e) {
             response.put("Mensaje", "Error al eliminar cliente");
@@ -148,19 +165,61 @@ public class Cliente_controller {
             try {
                 Files.copy(file.getInputStream(), routeFile);
             } catch (IOException e) {
-                response.put("Mensaje", "Error al subir la imagen");
+                response.put("mensaje", "Error al subir la imagen");
                 return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            String nameAnterior = cliente.getFoto();
+
+            if (nameAnterior != null && nameAnterior.length() > 0) {
+                Path routeAnterior = Paths.get("uploads").resolve(nameAnterior).toAbsolutePath();
+                File fileAnterior = routeAnterior.toFile();
+                if (fileAnterior.exists() && fileAnterior.canRead()) {
+                    fileAnterior.delete();
+                }
             }
 
             cliente.setFoto(name);
             servicio.save(cliente);
 
-            response.put("Cliente", cliente);
+            response.put("cliente", cliente);
             response.put("Mensaje", "Se ha subido correctamente la imagen " + name);
 
         }
 
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/uploads/img/{fileName:.+}")
+    public ResponseEntity<Resource> ver_foto(@PathVariable String fileName) {
+
+        Path routeFile = Paths.get("uploads").resolve(fileName).toAbsolutePath();
+
+        Resource recurso = null;
+
+        try {
+            recurso = new UrlResource(routeFile.toUri());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        if (!recurso.exists() && !recurso.isReadable()) {
+            routeFile = Paths.get("src/main/resources/static/images").resolve("user.png").toAbsolutePath();
+
+            try {
+                recurso = new UrlResource(routeFile.toUri());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            // throw new RuntimeException("Error: No se pudo cargar la imagen " + fileName);
+
+        }
+
+        HttpHeaders cabecera = new HttpHeaders();
+        cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=\"" + recurso.getFilename() + "\"");
+
+        return new ResponseEntity<Resource>(recurso, HttpStatus.OK);
     }
 
 }
